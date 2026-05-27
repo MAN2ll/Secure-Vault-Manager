@@ -57,7 +57,7 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.navigation.compose)
-    implementation(libs.argon2.android)
+    //implementation(libs.argon2.android)
     implementation(libs.biometric)
     implementation(libs.coroutines.android)
     implementation(libs.lifecycle.viewmodel.compose)
