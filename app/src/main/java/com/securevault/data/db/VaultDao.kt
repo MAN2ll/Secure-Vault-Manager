@@ -1,0 +1,42 @@
+package com.securevault.data.db
+
+import androidx.room.*
+import com.securevault.data.model.VaultEntry
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface VaultDao {
+
+    @Query("SELECT * FROM vault_entries ORDER BY updatedAt DESC")
+    fun getAllEntries(): Flow<List<VaultEntry>>
+
+    @Query("SELECT * FROM vault_entries WHERE isFavorite = 1 ORDER BY updatedAt DESC")
+    fun getFavoriteEntries(): Flow<List<VaultEntry>>
+
+    @Query("SELECT * FROM vault_entries WHERE category = :category ORDER BY updatedAt DESC")
+    fun getEntriesByCategory(category: String): Flow<List<VaultEntry>>
+
+    @Query("SELECT * FROM vault_entries WHERE title LIKE '%' || :query || '%' ORDER BY updatedAt DESC")
+    fun searchEntries(query: String): Flow<List<VaultEntry>>
+
+    @Query("SELECT * FROM vault_entries WHERE id = :id")
+    suspend fun getEntryById(id: Long): VaultEntry?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEntry(entry: VaultEntry): Long
+
+    @Update
+    suspend fun updateEntry(entry: VaultEntry)
+
+    @Delete
+    suspend fun deleteEntry(entry: VaultEntry)
+
+    @Query("DELETE FROM vault_entries WHERE id = :id")
+    suspend fun deleteEntryById(id: Long)
+
+    @Query("SELECT DISTINCT category FROM vault_entries ORDER BY category")
+    fun getAllCategories(): Flow<List<String>>
+
+    @Query("SELECT COUNT(*) FROM vault_entries")
+    fun getEntryCount(): Flow<Int>
+}
