@@ -6,7 +6,7 @@
 - **База данных:** SQLite через Room ORM
 - **Шифрование:** AES-256-GCM через Android Keystore
 - **Хеширование пароля:** Argon2id (OWASP параметры: 64MB, 3 итерации)
-- **DI:** Hilt
+- **DI:** Hilt 
 - **Биометрия:** Android BiometricPrompt API
 
 ## Архитектура безопасности
