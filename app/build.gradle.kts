@@ -44,37 +44,46 @@ android {
 }
 
 dependencies {
-    // Hilt
+    // ========== Hilt (DI) ==========
     implementation("com.google.dagger:hilt-android:2.48")
     ksp("com.google.dagger:hilt-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     
-    // Security (argon2) ← ЗАКОММЕНТИРОВАТЬ ЭТИ ДВЕ:
-    // implementation("de.mkammerer:argon2-jvm:2.11")
-    // implementation("com.github.mhshams:jnacl:0.1.0")
+    // ========== БЕЗОПАСНОСТЬ ==========
+    // Argon2id для хеширования паролей (работает на Android через JNI)
+    implementation("de.mkammerer:argon2-jvm:2.11")
     
-    // EncryptedSharedPreferences ← ОСТАВИТЬ ЭТУ:
+    // Android Keystore + AES-256-GCM
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icons)
-    implementation(libs.hilt.android)
-    // ksp(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    // ksp(libs.room.compiler)
-    implementation(libs.navigation.compose)
-    // implementation(libs.argon2.android)
-    implementation(libs.biometric)
-    implementation(libs.coroutines.android)
-    implementation(libs.lifecycle.viewmodel.compose)
-    debugImplementation(libs.androidx.ui.tooling)
+    
+    // ========== SQLite (Room) ==========
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+    
+    // ========== Compose ==========
+    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
+    
+    // ========== Lifecycle & Navigation ==========
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    
+    // ========== Coroutines ==========
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    
+    // ========== AndroidX Core ==========
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    
+    // ========== Biometric ==========
+    implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
+    
+    // ========== Debug ==========
+    debugImplementation("androidx.compose.ui:ui-tooling")
 }
