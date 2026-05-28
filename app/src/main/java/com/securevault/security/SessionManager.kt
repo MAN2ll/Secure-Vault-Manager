@@ -1,68 +1,41 @@
 package com.securevault.security
 
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Хранит хеш мастер-пароля в EncryptedSharedPreferences (AES256-backed).
- * Управляет состоянием разблокировки в памяти — не на диске.
- */
 @Singleton
 class SessionManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    private val crypto: CryptoManager
 ) {
-
     companion object {
-        private const val PREFS_NAME = "secure_vault_prefs"
-        private const val KEY_MASTER_HASH = "master_password_hash"
-        private const val KEY_BIOMETRIC_ENABLED = "biometric_enabled"
-        private const val KEY_SETUP_DONE = "setup_done"
+        private const val KEY_MASTER_HASH = "master_hash"
+        private const val KEY_BIOMETRIC = "biometric_enabled"
+        private const val KEY_UNLOCKED = "is_unlocked"
     }
-
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
-
-    private val prefs: SharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        PREFS_NAME,
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    // Состояние сессии только в памяти — при закрытии приложения сбрасывается
-    @Volatile
-    private var isUnlocked: Boolean = false
-
-    fun isSetupDone(): Boolean = prefs.getBoolean(KEY_SETUP_DONE, false)
-
-    fun getMasterHash(): String? = prefs.getString(KEY_MASTER_HASH, null)
-
+    
+    val isSetupDone: Boolean
+        get() = crypto.getString(KEY_MASTER_HASH).isNotEmpty()
+    
+    var isBiometricEnabled: Boolean
+        get() = crypto.getString(KEY_BIOMETRIC, "false") == "true"
+        set(value) = crypto.saveString(KEY_BIOMETRIC, value.toString())
+    
     fun saveMasterHash(hash: String) {
-        prefs.edit()
-            .putString(KEY_MASTER_HASH, hash)
-            .putBoolean(KEY_SETUP_DONE, true)
-            .apply()
+        crypto.saveString(KEY_MASTER_HASH, hash)
     }
-
-    fun unlock() { isUnlocked = true }
-    fun lock() { isUnlocked = false }
-    fun isUnlocked(): Boolean = isUnlocked
-
-    fun isBiometricEnabled(): Boolean = prefs.getBoolean(KEY_BIOMETRIC_ENABLED, false)
-
-    fun setBiometricEnabled(enabled: Boolean) {
-        prefs.edit().putBoolean(KEY_BIOMETRIC_ENABLED, enabled).apply()
+    
+    fun getMasterHash(): String {
+        return crypto.getString(KEY_MASTER_HASH)
     }
-
-    fun reset() {
-        prefs.edit().clear().apply()
-        isUnlocked = false
+    
+    fun unlock() {
+        crypto.saveString(KEY_UNLOCKED, "true")
     }
+    
+    fun lock() {
+        crypto.saveString(KEY_UNLOCKED, "false")
+    }
+    
+    val isUnlocked: Boolean
+        get() = crypto.getString(KEY_UNLOCKED, "false") == "true"
 }
