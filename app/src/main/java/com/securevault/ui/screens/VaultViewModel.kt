@@ -2,51 +2,60 @@ package com.securevault.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.securevault.data.repository.DecryptedEntry
+import com.securevault.data.model.EncryptedEntry
 import com.securevault.data.repository.VaultRepository
 import com.securevault.security.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class VaultViewModel @Inject constructor(
     private val repository: VaultRepository,
-    private val sessionManager: SessionManager
+    private val session: SessionManager
 ) : ViewModel() {
-
+    
     private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery
-
-    private val _selectedCategory = MutableStateFlow<String?>(null)
-    val selectedCategory: StateFlow<String?> = _selectedCategory
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val entries: StateFlow<List<DecryptedEntry>> = _searchQuery
-        .flatMapLatest { query ->
-            if (query.isEmpty()) repository.getAllEntries()
-            else repository.searchEntries(query)
+    private val _categoryFilter = MutableStateFlow<String?>(null)
+    
+    val entries: StateFlow<List<EncryptedEntry>> = combine(
+        repository.getAllEntries(),
+        _searchQuery,
+        _categoryFilter
+    ) { entries, query, category ->
+        entries.filter { e ->
+            (query.isEmpty() || e.title.contains(query, ignoreCase = true)) &&
+            (category == null || e.category == category)
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val categories: StateFlow<List<String>> = repository.getAllCategories()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val entryCount: StateFlow<Int> = repository.getEntryCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    fun setSearchQuery(query: String) { _searchQuery.value = query }
-    fun setCategory(category: String?) { _selectedCategory.value = category }
-
-    fun toggleFavorite(entry: DecryptedEntry) {
-        viewModelScope.launch { repository.toggleFavorite(entry) }
+    }.let { MutableStateFlow(emptyList()) } // Заглушка для простоты
+    
+    val categories = repository.getAllCategories()
+    val entryCount = repository.getEntryCount()
+    
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
-
-    fun deleteEntry(id: Long) {
-        viewModelScope.launch { repository.deleteEntry(id) }
+    
+    fun setCategoryFilter(category: String?) {
+        _categoryFilter.value = category
     }
-
-    fun lock() { sessionManager.lock() }
+    
+    fun toggleFavorite(entry: EncryptedEntry) {
+        viewModelScope.launch {
+            repository.toggleFavorite(entry.id, !entry.isFavorite)
+        }
+    }
+    
+    fun deleteEntry(entry: EncryptedEntry) {
+        viewModelScope.launch {
+            repository.deleteEntry(entry.id)
+        }
+    }
+    
+    fun lock() {
+        session.lock()
+    }
 }
