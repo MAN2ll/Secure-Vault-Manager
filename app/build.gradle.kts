@@ -49,11 +49,11 @@ dependencies {
     ksp("com.google.dagger:hilt-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     
-    // Security (argon2)
-    implementation("de.mkammerer:argon2-jvm:2.11")
-    implementation("com.github.mhshams:jnacl:0.1.0")
+    // Security (argon2) ← ЗАКОММЕНТИРОВАТЬ ЭТИ ДВЕ:
+    // implementation("de.mkammerer:argon2-jvm:2.11")
+    // implementation("com.github.mhshams:jnacl:0.1.0")
     
-    // EncryptedSharedPreferences
+    // EncryptedSharedPreferences ← ОСТАВИТЬ ЭТУ:
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     implementation(libs.androidx.core.ktx)
