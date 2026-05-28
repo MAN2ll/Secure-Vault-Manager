@@ -33,6 +33,7 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 #argon2-android = { group = "de.mkammerer", name = "argon2-android", version.ref = "argon2" }
+argon2-jvm = { group = "de.mkammerer", name = "argon2-jvm", version = "2.11" }
 biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
