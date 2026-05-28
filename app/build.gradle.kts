@@ -2,8 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
+    // alias(libs.plugins.hilt)
+    // alias(libs.plugins.ksp)
 }
 
 android {
@@ -57,7 +57,7 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.navigation.compose)
-    //implementation(libs.argon2.android)
+    // implementation(libs.argon2.android)
     implementation(libs.biometric)
     implementation(libs.coroutines.android)
     implementation(libs.lifecycle.viewmodel.compose)
