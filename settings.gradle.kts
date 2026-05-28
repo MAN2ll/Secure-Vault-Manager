@@ -1,12 +1,6 @@
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
@@ -16,9 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-         maven { url = uri("https://jitpack.io") }
+        // JitPack убран — не нужен для argon2-jvm
     }
 }
-
-rootProject.name = "SecureVault"
+rootProject.name = "Secure-Vault-Manager"
 include(":app")
