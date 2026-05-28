@@ -51,7 +51,7 @@ dependencies {
     
     // Security (argon2)
     implementation("de.mkammerer:argon2-jvm:2.11")
-    implementation("de.mkammerer:argon2-android:1.3")
+    implementation("com.github.mhshams:jnacl:0.1.0")
     
     // EncryptedSharedPreferences
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
