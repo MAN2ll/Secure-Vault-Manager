@@ -16,7 +16,7 @@ import javax.inject.Singleton
  * так и к атакам по памяти с GPU (Argon2d).
  */
 @Singleton
-class Argon2Helper @Inject constructor() {
+/* class Argon2Helper @Inject constructor() {
 
     companion object {
         private const val MEMORY_COST = 65536  // 64 MB в KB
@@ -49,4 +49,4 @@ class Argon2Helper @Inject constructor() {
             argon2.wipeArray(password) // немедленно затираем пароль из памяти
         }
     }
-}
+} */
