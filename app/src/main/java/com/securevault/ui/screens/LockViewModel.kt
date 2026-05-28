@@ -5,76 +5,69 @@ import androidx.lifecycle.viewModelScope
 import com.securevault.security.Argon2Helper
 import com.securevault.security.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed class LockUiState {
-    object Idle : LockUiState()
-    object Loading : LockUiState()
-    object Success : LockUiState()
-    data class Error(val message: String) : LockUiState()
-}
-
 @HiltViewModel
 class LockViewModel @Inject constructor(
-    private val sessionManager: SessionManager,
-    private val argon2Helper: Argon2Helper
+    private val session: SessionManager,
+    private val argon2: Argon2Helper
 ) : ViewModel() {
-
-    private val _state = MutableStateFlow<LockUiState>(LockUiState.Idle)
-    val state: StateFlow<LockUiState> = _state
-
-    val isSetupDone: Boolean get() = sessionManager.isSetupDone()
-    val isBiometricEnabled: Boolean get() = sessionManager.isBiometricEnabled()
-
-    fun setupMasterPassword(password: String, confirm: String) {
-        if (password.length < 6) {
-            _state.value = LockUiState.Error("Пароль должен быть не менее 6 символов")
-            return
-        }
-        if (password != confirm) {
-            _state.value = LockUiState.Error("Пароли не совпадают")
-            return
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            _state.value = LockUiState.Loading
-            try {
-                val hash = argon2Helper.hashPassword(password.toCharArray())
-                sessionManager.saveMasterHash(hash)
-                sessionManager.unlock()
-                _state.value = LockUiState.Success
-            } catch (e: Exception) {
-                _state.value = LockUiState.Error("Ошибка создания пароля")
-            }
-        }
+    
+    private val _uiState = MutableStateFlow(LockUiState())
+    val uiState: StateFlow<LockUiState> = _uiState
+    
+    fun onPasswordChanged(password: String) {
+        _uiState.value = _uiState.value.copy(password = password, error = null)
     }
-
-    fun unlock(password: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _state.value = LockUiState.Loading
-            try {
-                val hash = sessionManager.getMasterHash()
-                if (hash != null && argon2Helper.verifyPassword(hash, password.toCharArray())) {
-                    sessionManager.unlock()
-                    _state.value = LockUiState.Success
-                } else {
-                    _state.value = LockUiState.Error("Неверный пароль")
-                }
-            } catch (e: Exception) {
-                _state.value = LockUiState.Error("Ошибка проверки пароля")
-            }
-        }
-    }
-
-    fun unlockWithBiometric() {
-        sessionManager.unlock()
-        _state.value = LockUiState.Success
-    }
-
+    
     fun resetError() {
-        _state.value = LockUiState.Idle
+        _uiState.value = _uiState.value.copy(error = null)
+    }
+    
+    fun setupMasterPassword() {
+        val password = _uiState.value.password
+        if (password.length < 6) {
+            _uiState.value = _uiState.value.copy(error = "Минимум 6 символов")
+            return
+        }
+        viewModelScope.launch {
+            val hash = argon2.hashPassword(password)
+            session.saveMasterHash(hash)
+            session.unlock()
+            _uiState.value = _uiState.value.copy(isSetupComplete = true)
+        }
+    }
+    
+    fun unlock() {
+        val password = _uiState.value.password
+        val storedHash = session.getMasterHash()
+        if (argon2.verifyPassword(storedHash, password)) {
+            session.unlock()
+            _uiState.value = _uiState.value.copy(isUnlocked = true)
+        } else {
+            _uiState.value = _uiState.value.copy(error = "Неверный пароль")
+        }
+    }
+    
+    fun onBiometricSuccess() {
+        session.unlock()
+        _uiState.value = _uiState.value.copy(isUnlocked = true)
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        // Очистка пароля из памяти
+        _uiState.value = _uiState.value.copy(password = "")
     }
 }
+
+data class LockUiState(
+    val password: String = "",
+    val error: String? = null,
+    val isSetupComplete: Boolean = false,
+    val isUnlocked: Boolean = false,
+    val isBiometricEnabled: Boolean = false
+)
